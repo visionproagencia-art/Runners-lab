@@ -10,16 +10,7 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;}
 
 /* LOGIN */
-#login-screen{position:fixed;inset:0;background:#0e0e0e;display:flex;align-items:center;justify-content:center;z-index:9999;}
-.login-box{background:#1a1a1a;border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:320px;text-align:center;}
-.login-box .ico{font-size:32px;margin-bottom:14px;}
-.login-box h2{font-size:18px;font-weight:600;margin-bottom:6px;}
-.login-box p{font-size:13px;color:var(--muted);margin-bottom:24px;}
-.login-box input{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:11px;font-size:14px;font-family:inherit;margin-bottom:12px;text-align:center;letter-spacing:3px;}
-.login-box input:focus{outline:none;border-color:var(--lime);}
-.login-btn{width:100%;background:var(--lime);color:var(--dark);font-weight:700;padding:11px;border-radius:8px;font-size:14px;cursor:pointer;border:none;font-family:inherit;}
-.login-btn:hover{background:#d4ee38;}
-.login-err{font-size:12px;color:#e74c3c;margin-top:10px;display:none;}
+
 
 /* LAYOUT */
 .app{display:flex;height:100vh;overflow:hidden;}
@@ -176,17 +167,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="ico">🔒</div>
-    <h2>Runners Lab</h2>
-    <p>Painel exclusivo para sócios</p>
-    <input type="password" id="pwd-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPwd()"/>
-    <button class="login-btn" onclick="checkPwd()">Entrar</button>
-    <div class="login-err" id="login-error">Senha incorreta. Tente novamente.</div>
-  </div>
-</div>
+
 
 <!-- APP -->
 <div class="app">
@@ -339,6 +320,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 <script>
 const SUPA_URL='https://wkhlhwxpulfhvfbhrwqm.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndraGxod3hwdWxmaHZmYmhyd3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDE1MDcsImV4cCI6MjA5MjI3NzUwN30.3vRO6f2kebqHHqKNukvtB_ySHY1gpMdB0wtifg2u2Gc';
+const SENHA='runners2025';
 
 async function dbGet(key){
   try{
@@ -464,15 +446,7 @@ let calDate=new Date(),selectedDay=null,panelTab='all';
 let drivePath=[{id:'19RsTI979WDHRuLJvevapwjwwWioFI0bY',name:'[RUNNERS LAB]'}];
 let selDriveItem=null,driveLoaded=false;
 
-function checkPwd(){
-  if(document.getElementById('pwd-input').value===SENHA){
-    document.getElementById('login-screen').style.display='none';
-    sessionStorage.setItem('rl-auth','1');
-  } else {
-    document.getElementById('login-error').style.display='block';
-    document.getElementById('pwd-input').value='';
-  }
-}
+
 
 async function save(){
   try{
@@ -681,7 +655,6 @@ function saveTool(){const name=document.getElementById('t-name').value.trim(),de
 function delTool(i){if(confirm('Remover?')){state.tools.splice(i,1);renderTools();save();}}
 
 (async()=>{
-  if(sessionStorage.getItem('rl-auth')==='1') document.getElementById('login-screen').style.display='none';
   await loadState();renderOverview();renderLegend();buildCal();renderTools();
 })();
 </script>
