@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Runners Lab</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--lime:#C8E032;--dark:#2D2D2D;--bg:#141414;--card:#1e1e1e;--card2:#252525;--text:#f0f0f0;--muted:#888;--border:#2e2e2e;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:#0e0e0e;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.login-box{background:#1a1a1a;border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:320px;text-align:center;}
+.login-box .ico{font-size:32px;margin-bottom:14px;}
+.login-box h2{font-size:18px;font-weight:600;margin-bottom:6px;}
+.login-box p{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.login-box input{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:11px;font-size:14px;font-family:inherit;margin-bottom:12px;text-align:center;letter-spacing:3px;}
+.login-box input:focus{outline:none;border-color:var(--lime);}
+.login-btn{width:100%;background:var(--lime);color:var(--dark);font-weight:700;padding:11px;border-radius:8px;font-size:14px;cursor:pointer;border:none;font-family:inherit;}
+.login-btn:hover{background:#d4ee38;}
+.login-err{font-size:12px;color:#e74c3c;margin-top:10px;display:none;}
+
+/* LAYOUT */
+.app{display:flex;height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:200px;min-width:200px;background:#111;border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.sidebar-logo{padding:20px 16px;border-bottom:1px solid var(--border);text-align:center;}
+.sidebar-logo span{font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:2px;}
+.sidebar-nav{flex:1;padding:8px 0;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 16px;color:var(--muted);font-size:13px;border-left:3px solid transparent;cursor:pointer;transition:all .18s;user-select:none;}
+.nav-item:hover,.nav-item.on{color:var(--lime);border-left-color:var(--lime);background:rgba(200,224,50,.06);}
+.nav-item .ni{font-size:14px;width:16px;text-align:center;}
+.sidebar-footer{padding:12px 16px;font-size:10px;color:#444;border-top:1px solid var(--border);}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:24px 28px;min-width:0;}
+
+/* SECTIONS */
+.sec{display:none;}.sec.on{display:block;}
+.page-title{font-size:20px;font-weight:600;margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+
+/* HERO */
+.hero{background:var(--lime);border-radius:12px;padding:24px 28px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.hero-title{font-size:22px;font-weight:800;color:var(--dark);}
+.hero-sub{font-size:12px;color:rgba(45,45,45,.65);margin-top:4px;}
+.hero-badge{background:var(--dark);color:var(--lime);padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;white-space:nowrap;}
+
+/* METRICS */
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .2s;}
+.mc:hover{border-color:var(--lime);}
+.mc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.mc-val{font-size:22px;font-weight:600;}
+.mc-chg{font-size:11px;color:var(--lime);margin-top:2px;}
+
+/* OV GRID */
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.ov-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.ov-card-title{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;}
+.pi{margin-bottom:10px;}
+.pl{display:flex;justify-content:space-between;font-size:11px;color:var(--text);margin-bottom:4px;}
+.pb{height:4px;background:var(--border);border-radius:3px;overflow:hidden;}
+.pf{height:100%;background:var(--lime);border-radius:3px;transition:width .3s;}
+.act-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.act-item:last-child{border-bottom:none;}
+.act-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.act-time{font-size:10px;color:var(--muted);margin-left:auto;}
+
+/* TOP BAR */
+.top-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+
+/* CAL LAYOUT */
+.cal-layout{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start;}
+.cal-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cal-head h2{font-size:14px;font-weight:500;}
+.cal-navs{display:flex;gap:6px;}
+.cal-navs button{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;}
+.cal-navs button:hover{border-color:var(--lime);color:var(--lime);}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cdn{text-align:center;font-size:9px;color:var(--muted);padding:4px 0;text-transform:uppercase;}
+.cd{min-height:62px;background:var(--card2);border-radius:6px;padding:4px;cursor:pointer;border:1px solid transparent;transition:all .15s;}
+.cd:hover{border-color:rgba(200,224,50,.5);background:#2a2a2a;}
+.cd.selected{border-color:var(--lime);background:#252d10;}
+.cd.has{border-color:rgba(200,224,50,.28);}
+.cd.today .dn{background:var(--lime);color:var(--dark);border-radius:50%;width:19px;height:19px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.cd.empty{background:transparent;cursor:default;border:none;}
+.dn{font-size:11px;font-weight:500;margin-bottom:2px;}
+.ev-pills{display:flex;flex-direction:column;gap:2px;}
+.ev-pill{font-size:8px;padding:1px 4px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* DAY PANEL */
+.day-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:sticky;top:0;max-height:calc(100vh - 100px);overflow-y:auto;}
+.dp-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
+.dp-hd h2{font-size:13px;font-weight:500;}
+.dp-actions{display:flex;gap:6px;}
+.dp-empty{text-align:center;padding:32px 0;color:var(--muted);font-size:12px;}
+.dp-empty .dp-ico{font-size:26px;margin-bottom:8px;}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:10px;}
+.ptab{padding:6px 10px;font-size:11px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;background:transparent;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:all .15s;}
+.ptab.on{color:var(--lime);border-bottom-color:var(--lime);}
+
+/* ITEM CARD */
+.item-card{background:var(--card2);border-radius:9px;overflow:hidden;margin-bottom:9px;border:1px solid var(--border);position:relative;}
+.item-img{width:100%;height:100px;object-fit:cover;display:block;}
+.item-img-ph{width:100%;height:65px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.vid-ph{width:100%;height:65px;background:#111;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.vid-ph img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.play-sm{width:28px;height:28px;background:var(--lime);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;flex-shrink:0;}
+.play-sm::after{content:'';border-left:9px solid var(--dark);border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px;}
+.item-body{padding:8px 10px;}
+.item-body h3{font-size:12px;font-weight:500;margin-bottom:3px;}
+.item-cap{font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;}
+.item-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.itag{font-size:9px;padding:2px 6px;border-radius:3px;}
+.itime{font-size:10px;color:#555;}
+.itb{font-size:9px;padding:2px 7px;border-radius:3px;font-weight:600;}
+.iactions{display:flex;gap:6px;margin-top:6px;}
+.del-btn{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.8);border:none;color:#e74c3c;border-radius:5px;padding:2px 7px;cursor:pointer;font-size:10px;display:none;}
+.item-card:hover .del-btn{display:block;}
+.dbadge{display:inline-flex;align-items:center;gap:4px;font-size:10px;background:rgba(0,188,212,.12);color:#00BCD4;border-radius:4px;padding:2px 7px;margin-top:6px;cursor:pointer;}
+
+/* DRIVE */
+.drive-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.breadcrumb{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);flex-wrap:wrap;margin-bottom:14px;}
+.bc-link{cursor:pointer;color:var(--lime);}.bc-link:hover{text-decoration:underline;}
+.bc-sep{color:var(--border);}
+.drive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+.di-card{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:12px 10px;cursor:pointer;transition:all .18s;text-align:center;}
+.di-card:hover{border-color:var(--lime);background:#2a2a2a;}
+.di-card.is-media:hover{border-color:#4CAF50;}
+.di-card.sel-on{border-color:#4CAF50;background:rgba(76,175,80,.1);}
+.di-ico{font-size:24px;margin-bottom:6px;}
+.di-name{font-size:10px;font-weight:500;word-break:break-word;line-height:1.3;}
+.di-meta{font-size:9px;color:var(--muted);margin-top:2px;}
+.drive-sel-bar{display:none;align-items:center;gap:10px;padding:10px 14px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:9px;margin-bottom:12px;flex-wrap:wrap;}
+.drive-sel-bar p{font-size:12px;flex:1;color:#4CAF50;font-weight:500;}
+.drive-loading{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+
+/* TOOLS */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+.tool-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:16px;position:relative;transition:border-color .2s;}
+.tool-card:hover{border-color:var(--lime);}
+.tool-ico{font-size:24px;margin-bottom:8px;}
+.tool-card h3{font-size:13px;font-weight:500;margin-bottom:4px;}
+.tool-card p{font-size:11px;color:var(--muted);line-height:1.4;}
+.tool-link{font-size:11px;color:var(--lime);text-decoration:none;display:block;margin-top:7px;}
+.tool-card:hover .del-btn{display:block;}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:7px;font-size:12px;cursor:pointer;border:none;font-family:inherit;}
+.btn-lime{background:var(--lime);color:var(--dark);font-weight:600;}.btn-lime:hover{background:#d4ee38;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}.btn-ghost:hover{border-color:var(--lime);color:var(--lime);}
+.btn-add{display:inline-flex;align-items:center;gap:5px;background:var(--lime);color:var(--dark);font-weight:600;padding:7px 13px;border-radius:7px;font-size:12px;cursor:pointer;border:none;font-family:inherit;}.btn-add:hover{background:#d4ee38;}
+.btn-outline{display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--lime);font-weight:600;padding:7px 13px;border-radius:7px;font-size:12px;cursor:pointer;border:1px solid var(--lime);font-family:inherit;}.btn-outline:hover{background:rgba(200,224,50,.08);}
+.btn-sm{padding:4px 9px;border-radius:5px;font-size:10px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:inherit;}.btn-sm:hover{border-color:var(--lime);color:var(--lime);}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:center;justify-content:center;}
+.overlay.on{display:flex;}
+.modal{background:#1a1a1a;border:1px solid var(--border);border-radius:13px;padding:24px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:15px;font-weight:500;margin-bottom:16px;}
+.modal label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px;margin-top:10px;}
+.modal input,.modal textarea,.modal select{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 11px;font-size:12px;font-family:inherit;}
+.modal textarea{resize:vertical;min-height:65px;}
+.modal-btns{display:flex;gap:8px;margin-top:18px;justify-content:flex-end;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="ico">🔒</div>
+    <h2>Runners Lab</h2>
+    <p>Painel exclusivo para sócios</p>
+    <input type="password" id="pwd-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPwd()"/>
+    <button class="login-btn" onclick="checkPwd()">Entrar</button>
+    <div class="login-err" id="login-error">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span>Runners Lab</span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-item on" onclick="go('overview',this)"><span class="ni">◈</span> Visão Geral</div>
+      <div class="nav-item" onclick="go('cronograma',this)"><span class="ni">◷</span> Cronograma</div>
+      <div class="nav-item" onclick="go('drive',this);loadDrive()"><span class="ni">☁</span> Google Drive</div>
+      <div class="nav-item" onclick="go('ferramentas',this)"><span class="ni">⚙</span> Ferramentas</div>
+    </nav>
+    <div class="sidebar-footer">Runners Lab © 2025</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- OVERVIEW -->
+    <div id="overview" class="sec on">
+      <div class="hero">
+        <div><div class="hero-title">Runners Lab</div><div class="hero-sub" id="hero-sub"></div></div>
+        <div class="hero-badge" id="hero-badge"></div>
+      </div>
+      <div class="metrics-row" id="metrics-grid"></div>
+      <div class="ov-grid">
+        <div class="ov-card">
+          <div class="ov-card-title">Metas do mês</div>
+          <div class="pi"><div class="pl"><span>Conteúdo orgânico</span><span id="p1v">0%</span></div><div class="pb"><div class="pf" id="p1"></div></div></div>
+          <div class="pi"><div class="pl"><span>Vídeos produzidos</span><span id="p2v">0%</span></div><div class="pb"><div class="pf" id="p2"></div></div></div>
+          <div class="pi"><div class="pl"><span>Alcance meta</span><span id="p3v">0%</span></div><div class="pb"><div class="pf" id="p3"></div></div></div>
+          <div class="pi"><div class="pl"><span>Parcerias ativas</span><span id="p4v">0%</span></div><div class="pb"><div class="pf" id="p4"></div></div></div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-card-title">Próximos conteúdos</div>
+          <div id="activities-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRONOGRAMA -->
+    <div id="cronograma" class="sec">
+      <div class="page-title">Cronograma de conteúdo</div>
+      <div class="page-sub">Posts estáticos e vídeos integrados no calendário</div>
+      <div class="top-bar">
+        <button class="btn-add" onclick="openItemModal('post')">+ Post estático</button>
+        <button class="btn-outline" onclick="openItemModal('video')">▷ Vídeo</button>
+        <button class="btn-outline" onclick="go('drive',document.querySelectorAll('.nav-item')[2]);loadDrive()">☁ Importar do Drive</button>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="cal-layout">
+        <div>
+          <div class="cal-wrap">
+            <div class="cal-head">
+              <h2 id="cal-title"></h2>
+              <div class="cal-navs">
+                <button onclick="chgMonth(-1)">&#8592;</button>
+                <button onclick="chgMonth(1)">&#8594;</button>
+              </div>
+            </div>
+            <div class="cg" id="cal-grid"></div>
+          </div>
+        </div>
+        <div class="day-panel" id="day-panel">
+          <div class="dp-empty"><div class="dp-ico">📅</div><div>Selecione um dia para ver o conteúdo agendado</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVE -->
+    <div id="drive" class="sec">
+      <div class="page-title">Google Drive</div>
+      <div class="page-sub">Navegue pela pasta [RUNNERS LAB] e agende arquivos no cronograma</div>
+      <div id="drive-sel-bar" class="drive-sel-bar">
+        <p id="drive-sel-label">Arquivo selecionado</p>
+        <button class="btn-add" style="font-size:11px;padding:6px 12px" onclick="scheduleFromDrive()">📅 Agendar</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:6px 10px" onclick="clearDriveSel()">✕</button>
+      </div>
+      <div class="drive-wrap">
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div id="drive-content"><div class="drive-loading">Carregando...</div></div>
+      </div>
+    </div>
+
+    <!-- FERRAMENTAS -->
+    <div id="ferramentas" class="sec">
+      <div class="page-title">Ferramentas</div>
+      <div class="page-sub">Recursos e links da operação</div>
+      <button class="btn-add" onclick="openModal('tool-modal')" style="margin-bottom:18px">+ Adicionar ferramenta</button>
+      <div class="tools-grid" id="tools-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="overlay" id="metric-modal">
+  <div class="modal">
+    <h2>Editar métrica</h2>
+    <input type="hidden" id="m-idx"/>
+    <label>Nome</label><input id="m-name" type="text"/>
+    <label>Valor</label><input id="m-val" type="text"/>
+    <label>Variação (ex: +12%)</label><input id="m-chg" type="text"/>
+    <div class="modal-btns"><button class="btn btn-ghost" onclick="closeModal('metric-modal')">Cancelar</button><button class="btn btn-lime" onclick="saveMetric()">Salvar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="item-modal">
+  <div class="modal">
+    <h2 id="item-modal-title">Agendar conteúdo</h2>
+    <input type="hidden" id="im-type"/>
+    <input type="hidden" id="im-edit-id"/>
+    <input type="hidden" id="im-drive-id"/>
+    <input type="hidden" id="im-drive-url"/>
+    <label>Data</label><input id="im-date" type="date"/>
+    <label>Horário</label><input id="im-time" type="text" placeholder="18:00"/>
+    <label>Título</label><input id="im-title" type="text"/>
+    <div id="post-fields">
+      <label>Legenda / Caption</label><textarea id="im-caption"></textarea>
+      <label>Categoria</label>
+      <select id="im-cat">
+        <option value="treino">Treino</option><option value="nutricao">Nutrição</option>
+        <option value="review">Review</option><option value="evento">Evento</option>
+        <option value="resultado">Resultado</option><option value="institucional">Institucional</option>
+      </select>
+      <label>Imagem (opcional)</label><input id="im-file" type="file" accept="image/*"/>
+    </div>
+    <div id="video-fields" style="display:none">
+      <label>Link do vídeo</label><input id="im-url" type="text" placeholder="https://..."/>
+      <label>Status</label>
+      <select id="im-vstatus"><option>Publicado</option><option>Em edição</option><option>Em produção</option><option>Planejado</option></select>
+      <label>Descrição</label><textarea id="im-vdesc"></textarea>
+    </div>
+    <div id="drive-ref-info" style="display:none;margin-top:10px;padding:8px 11px;background:rgba(0,188,212,.1);border-radius:7px;font-size:11px;color:#00BCD4;">☁ Arquivo vinculado do Google Drive</div>
+    <div class="modal-btns"><button class="btn btn-ghost" onclick="closeModal('item-modal')">Cancelar</button><button class="btn btn-lime" onclick="saveItem()">Salvar</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="tool-modal">
+  <div class="modal">
+    <h2>Adicionar ferramenta</h2>
+    <label>Nome</label><input id="t-name" type="text"/>
+    <label>Descrição</label><input id="t-desc" type="text"/>
+    <label>Emoji</label><input id="t-icon" type="text" placeholder="📅"/>
+    <label>Link</label><input id="t-url" type="text" placeholder="https://..."/>
+    <div class="modal-btns"><button class="btn btn-ghost" onclick="closeModal('tool-modal')">Cancelar</button><button class="btn btn-lime" onclick="saveTool()">Salvar</button></div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://wkhlhwxpulfhvfbhrwqm.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndraGxod3hwdWxmaHZmYmhyd3FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDE1MDcsImV4cCI6MjA5MjI3NzUwN30.3vRO6f2kebqHHqKNukvtB_ySHY1gpMdB0wtifg2u2Gc';
+
+async function dbGet(key){
+  try{
+    const r=await fetch(`${SUPA_URL}/rest/v1/rl_data?key=eq.${key}&select=value`,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    const d=await r.json();
+    return d&&d[0]?d[0].value:null;
+  }catch(e){return null;}
+}
+async function dbSet(key,value){
+  try{
+    await fetch(`${SUPA_URL}/rest/v1/rl_data`,{
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({key,value,updated_at:new Date().toISOString()})
+    });
+  }catch(e){}
+}
+const CATS={
+  treino:{label:'Treino',color:'#4CAF50',bg:'rgba(76,175,80,.18)'},
+  nutricao:{label:'Nutrição',color:'#FF9800',bg:'rgba(255,152,0,.18)'},
+  review:{label:'Review',color:'#2196F3',bg:'rgba(33,150,243,.18)'},
+  evento:{label:'Evento',color:'#E91E63',bg:'rgba(233,30,99,.18)'},
+  resultado:{label:'Resultado',color:'#C8E032',bg:'rgba(200,224,50,.18)'},
+  institucional:{label:'Institucional',color:'#9C27B0',bg:'rgba(156,39,176,.18)'},
+};
+const VC={color:'#00BCD4',bg:'rgba(0,188,212,.18)'};
+
+const DRIVE_TREE={
+  '19RsTI979WDHRuLJvevapwjwwWioFI0bY':{name:'[RUNNERS LAB]',items:[
+    {id:'1EGNaDe25UavEo6IRG-rwVHehKVFXxB5E',name:'FOTOS',type:'folder'},
+    {id:'1jveCQaVU_m_n0Z_fLTR7hZNWBIEXlmEB',name:'VIDEOS',type:'folder'},
+  ]},
+  '1jveCQaVU_m_n0Z_fLTR7hZNWBIEXlmEB':{name:'VIDEOS',items:[
+    {id:'1tQzD0f_AM5uLGiyhi6maUOfoaVc2wfTU',name:'ROMULO CORRE 5',type:'folder'},
+    {id:'1adA7n-9tIF-9iojX7ZGVyJV52aw3Cni_',name:'[BEIRA MAR]',type:'folder'},
+    {id:'18QoTfPVjSoJd6pNiflA5gVPLH1Ma7_pd',name:'[QUANDO USAR MODELO]',type:'folder'},
+    {id:'180R0m_cWiX1WWgiOHNIWk_hmItbvXv13',name:'[SUPLÊNCIA]',type:'folder'},
+    {id:'1eTM_R0OM075_jVCb_ST7JP2FrH8Mj7pB',name:'VÍDEO CHAMADA',type:'folder'},
+    {id:'11itGQWSUSn15eWO9E26ufWFUK2EjDEZw',name:'[LOJA ESPECIALIZADA]',type:'folder'},
+    {id:'1ohS7fiZxNsx7yRwNSDdoC5mZjKpTx8IC',name:'[MARCAS RUNNERS]',type:'folder'},
+    {id:'1MrlD6zQafr0KQsJ1ZQtF-q4QhRHHSk_h',name:'[TENIS PARA QUEM]',type:'folder'},
+    {id:'1GHdyiumnhDjLhu1sNVctB4S_w1fSijUe',name:'[5KM 10KM X 21KM 42KM]',type:'folder'},
+  ]},
+  '1tQzD0f_AM5uLGiyhi6maUOfoaVc2wfTU':{name:'ROMULO CORRE 5',items:[
+    {id:'1x_m97JAjXr0c35yLHeOsW888mPhKaL5z',name:'CORRE 5 X CORRE 4',type:'folder'},
+    {id:'1BUY9oahh-Ldjp1KyBd2bo_qiTo24sLcZ',name:'Tentativa 02 Corre 5',type:'folder'},
+    {id:'1omSpfKeioNw_xrFPEe7l46G1tbvb0XZ_',name:'Apresentação Romulo',type:'folder'},
+  ]},
+  '1BUY9oahh-Ldjp1KyBd2bo_qiTo24sLcZ':{name:'Tentativa 02 Corre 5',items:[
+    {id:'1yMrL9Rfuq2nJoHBcJQU2Vho9Iyyh6XBO',name:'C0001.MP4',type:'video',size:'48 MB'},
+    {id:'1zSbq-MsO89d-iSqBSaRXV-LugTNTUMLl',name:'C0002.MP4',type:'video',size:'36 MB'},
+    {id:'1-b7qCbco84OZTthavTP8zLowWkAxj-8P',name:'C0003.MP4',type:'video',size:'24 MB'},
+    {id:'1g89SHP7ekytE3zqGII-Ewc1-TVPQUYi_',name:'C0004.MP4',type:'video',size:'72 MB'},
+    {id:'1LRP6Guy5tjgcxOyBZ8q00jKLGh5ARcDQ',name:'C0005.MP4',type:'video',size:'32 MB'},
+    {id:'1XPXdv9cZM-uucGYNC3ja303NPcrGjhyW',name:'C0006.MP4',type:'video',size:'16 MB'},
+    {id:'1gi_zuN_bqKpeITOxciAqov2243bHs0AJ',name:'C0007.MP4',type:'video',size:'28 MB'},
+    {id:'1WBamAsRWxV96Hl7gxLsjTPPfd7uHYWV5',name:'C0008.MP4',type:'video',size:'132 MB'},
+    {id:'1sRkXN8zGBZB5kp9uNbMNvAlODMCGViSo',name:'C0009.MP4',type:'video',size:'132 MB'},
+    {id:'1TfAMpz9MJMULCCXA1JdgzBFtowyU2-Ol',name:'C0010.MP4',type:'video',size:'76 MB'},
+    {id:'1wsp7Y5ljFIlvRY6DJHQ_AcM1ll9zZhIi',name:'C8080.MP4',type:'video',size:'1.3 GB'},
+  ]},
+  '1adA7n-9tIF-9iojX7ZGVyJV52aw3Cni_':{name:'[BEIRA MAR]',items:[
+    {id:'1G-ZBcExlGv1nguqu83k-IJn-KQvxu9UV',name:'C6575.MP4',type:'video',size:'964 MB'},
+    {id:'1jsbGRidQlQgiK80DetklDGN94NKCtygY',name:'C6577.MP4',type:'video',size:'496 MB'},
+    {id:'1w0iNf_s6kcK2dVHire3o7AX4LQLsh24p',name:'C6576.MP4',type:'video',size:'3.0 GB'},
+  ]},
+  '18QoTfPVjSoJd6pNiflA5gVPLH1Ma7_pd':{name:'[QUANDO USAR MODELO]',items:[
+    {id:'1E1JNpzoTXd9rzSyYMr8uRCSq5MqvUDBd',name:'C6580.MP4',type:'video',size:'3.5 GB'},
+  ]},
+  '180R0m_cWiX1WWgiOHNIWk_hmItbvXv13':{name:'[SUPLÊNCIA]',items:[
+    {id:'1o39wlcuqvhsmfZ1IJa-wI-PSZYryYthr',name:'C5822.MP4',type:'video',size:'760 MB'},
+    {id:'14Y9f8MMc2yn44ZhVQniTKDW_67jm1Vd9',name:'C5823.MP4',type:'video',size:'816 MB'},
+    {id:'1cJRz1lWrC_S8A0A5gOBGXEtwFqs_lBtQ',name:'C5825.MP4',type:'video',size:'548 MB'},
+    {id:'1SZdwhXTmjuIP_0w8duyRCn7vtWcirsXQ',name:'C5826.MP4',type:'video',size:'76 MB'},
+    {id:'1z7wjZNEKAKEYbzPmJ2swZ7uL-z8aAF8W',name:'C5657.MP4',type:'video',size:'56 MB'},
+    {id:'1xmMz7abBeFaHUzg6QUzOv55iUEFCh2Rq',name:'C5664.MP4',type:'video',size:'204 MB'},
+    {id:'1ieXd79TVflzPZ5kBbTmJfrrz6FrKXjQW',name:'C5669.MP4',type:'video',size:'468 MB'},
+    {id:'1aPT7PTvczwx9RBqNS1o8k46xR037FRQy',name:'C6277.MP4',type:'video',size:'44 MB'},
+    {id:'1zEEO-ZXLDmnVpQe58r-aYeA9DLJxVuWb',name:'C6292.MP4',type:'video',size:'60 MB'},
+    {id:'1oZPRVplFHlr3SA8BGTn-zOWte5mwEmGH',name:'C6297.MP4',type:'video',size:'100 MB'},
+    {id:'1O00zlsa0E88CSTItypT0czWXjtQQJpUB',name:'C6299.MP4',type:'video',size:'48 MB'},
+  ]},
+  '1eTM_R0OM075_jVCb_ST7JP2FrH8Mj7pB':{name:'VÍDEO CHAMADA',items:[
+    {id:'1q6Gh4wVP5vxQsddItHuU5IwdUozOm7MD',name:'VÍDEO PRONTO',type:'folder'},
+    {id:'1Z2-zj_ek6BBrIhV714MgHxEKsRc6u3RV',name:'TAKES DRONE',type:'folder'},
+    {id:'1piuVy_yjCc7V5wN0g3hY_rfevMVm66n1',name:'TAKES CÂMERA',type:'folder'},
+  ]},
+  '11itGQWSUSn15eWO9E26ufWFUK2EjDEZw':{name:'[LOJA ESPECIALIZADA]',items:[
+    {id:'1QCOwd__0sK-tfgBNkY5V5EqnHnysLcIW',name:'C6573.MP4',type:'video',size:'904 MB'},
+  ]},
+  '1ohS7fiZxNsx7yRwNSDdoC5mZjKpTx8IC':{name:'[MARCAS RUNNERS]',items:[
+    {id:'1fm2oA9hCXiyk8ge7zLX2F0u264tC6K5I',name:'C6572.MP4',type:'video',size:'2.0 GB'},
+  ]},
+  '1MrlD6zQafr0KQsJ1ZQtF-q4QhRHHSk_h':{name:'[TENIS PARA QUEM]',items:[
+    {id:'14_SdPEQ9O3Y7txIqfZfWJH5E5pZRoU0l',name:'C6578.MP4',type:'video',size:'184 MB'},
+    {id:'1NfhFmxGAUBnS28-OYyZMtJ-BmAW0O7JT',name:'C6579.MP4',type:'video',size:'4.0 GB'},
+  ]},
+  '1GHdyiumnhDjLhu1sNVctB4S_w1fSijUe':{name:'[5KM 10KM X 21KM 42KM]',items:[
+    {id:'1DxItmuXO4YW1w7uZSEhRZA5AWVPYVu5H',name:'C6581.MP4',type:'video',size:'344 MB'},
+    {id:'1-owJ4Upgg2LraC8fsKR8UQoBigtPlRLE',name:'C6582.MP4',type:'video',size:'336 MB'},
+  ]},
+};
+
+function dUrl(id){return`https://drive.google.com/file/d/${id}/view`;}
+
+let state={
+  metrics:[
+    {name:'Posts publicados',val:'18',chg:'+12%'},
+    {name:'Vídeos',val:'6',chg:'+2'},
+    {name:'Engajamento',val:'4.7k',chg:'↑'},
+    {name:'Alcance',val:'22k',chg:'+8%'}
+  ],
+  items:{},
+  tools:[
+    {name:'Google Calendar',desc:'Agendamento de postagens',icon:'📅',url:'https://calendar.google.com'},
+    {name:'Meta Business',desc:'Gestão de anúncios',icon:'📊',url:'https://business.facebook.com'},
+    {name:'Google Drive',desc:'Pasta Runners Lab',icon:'📁',url:'https://drive.google.com/drive/folders/19RsTI979WDHRuLJvevapwjwwWioFI0bY'},
+  ],
+  goals:{p1:75,p2:60,p3:88,p4:50}
+};
+
+let calDate=new Date(),selectedDay=null,panelTab='all';
+let drivePath=[{id:'19RsTI979WDHRuLJvevapwjwwWioFI0bY',name:'[RUNNERS LAB]'}];
+let selDriveItem=null,driveLoaded=false;
+
+function checkPwd(){
+  if(document.getElementById('pwd-input').value===SENHA){
+    document.getElementById('login-screen').style.display='none';
+    sessionStorage.setItem('rl-auth','1');
+  } else {
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('pwd-input').value='';
+  }
+}
+
+async function save(){
+  try{
+    const s=JSON.parse(JSON.stringify(state));
+    for(const k in s.items) s.items[k]=s.items[k].map(p=>({...p,img:p.img?'__img__':''}));
+    await window.storage.set('rl6-state',JSON.stringify(s));
+    for(const k in state.items) for(const p of state.items[k])
+      if(p.img&&p.img!=='__img__') try{await window.storage.set('rl6-img-'+p.id,p.img);}catch(e){}
+  }catch(e){}
+}
+async function loadState(){
+  try{
+    const r=await window.storage.get('rl6-state');
+    if(r){
+      const s=JSON.parse(r.value);state={...state,...s};
+      for(const k in state.items) for(const p of state.items[k])
+        if(p.img==='__img__') try{const ir=await window.storage.get('rl6-img-'+p.id);if(ir)p.img=ir.value;}catch(e){}
+    }
+  }catch(e){}
+}
+
+function go(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(a=>a.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  if(el)el.classList.add('on');
+}
+function openModal(id){document.getElementById(id).classList.add('on');}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
+
+function renderOverview(){
+  const now=new Date();
+  const M=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('hero-sub').textContent=`Painel de acompanhamento — ${M[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('hero-badge').textContent=`${M[now.getMonth()].toUpperCase()} ${now.getFullYear()}`;
+  const mg=document.getElementById('metrics-grid');mg.innerHTML='';
+  state.metrics.forEach((m,i)=>{mg.innerHTML+=`<div class="mc" onclick="editMetric(${i})"><div class="mc-label">${m.name}</div><div class="mc-val">${m.val}</div><div class="mc-chg">${m.chg}</div></div>`;});
+  ['p1','p2','p3','p4'].forEach(k=>{const v=state.goals[k]||0;document.getElementById(k).style.width=v+'%';document.getElementById(k+'v').textContent=v+'%';});
+  const today=new Date().toISOString().split('T')[0];
+  const upcoming=[];
+  Object.entries(state.items).sort(([a],[b])=>a.localeCompare(b)).forEach(([date,items])=>{if(date>=today)items.forEach(it=>upcoming.push({date,it}));});
+  const al=document.getElementById('activities-list');al.innerHTML='';
+  if(!upcoming.length){al.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0">Nenhum conteúdo agendado</div>';return;}
+  upcoming.slice(0,5).forEach(({date,it})=>{
+    const[y,m,d]=date.split('-');const c=it.type==='video'?VC:(CATS[it.cat]||CATS.institucional);
+    al.innerHTML+=`<div class="act-item"><div class="act-dot" style="background:${c.color}"></div><span style="font-size:10px">${it.type==='video'?'▷':'▦'}</span> ${it.title}<span class="act-time">${d}/${m}</span></div>`;
+  });
+}
+function editMetric(i){document.getElementById('m-idx').value=i;document.getElementById('m-name').value=state.metrics[i].name;document.getElementById('m-val').value=state.metrics[i].val;document.getElementById('m-chg').value=state.metrics[i].chg;openModal('metric-modal');}
+function saveMetric(){const i=+document.getElementById('m-idx').value;state.metrics[i]={name:document.getElementById('m-name').value,val:document.getElementById('m-val').value,chg:document.getElementById('m-chg').value};closeModal('metric-modal');renderOverview();save();}
+
+function renderLegend(){
+  let h=Object.entries(CATS).map(([k,v])=>`<div class="legend-item"><div class="legend-dot" style="background:${v.color}"></div>${v.label}</div>`).join('');
+  h+=`<div class="legend-item"><div class="legend-dot" style="background:${VC.color}"></div>Vídeo</div>`;
+  document.getElementById('legend').innerHTML=h;
+}
+
+function buildCal(){
+  const y=calDate.getFullYear(),m=calDate.getMonth();
+  const M=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  document.getElementById('cal-title').textContent=M[m]+' '+y;
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(d=>grid.innerHTML+=`<div class="cdn">${d}</div>`);
+  const first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),today=new Date();
+  for(let i=0;i<first;i++) grid.innerHTML+=`<div class="cd empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const di=state.items[key]||[];
+    const isToday=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
+    const isSel=selectedDay===key;
+    let pills='';
+    di.slice(0,3).forEach(it=>{const c=it.type==='video'?VC:(CATS[it.cat]||CATS.institucional);pills+=`<div class="ev-pill" style="background:${c.bg};color:${c.color}">${it.type==='video'?'▷':'▦'} ${it.title||'...'}</div>`;});
+    if(di.length>3) pills+=`<div class="ev-pill" style="background:rgba(255,255,255,.05);color:#666">+${di.length-3}</div>`;
+    const div=document.createElement('div');
+    div.className=`cd${di.length?' has':''}${isToday?' today':''}${isSel?' selected':''}`;
+    div.innerHTML=`<div class="dn">${d}</div><div class="ev-pills">${pills}</div>`;
+    div.onclick=()=>selectDay(key);
+    grid.appendChild(div);
+  }
+}
+function chgMonth(d){calDate.setMonth(calDate.getMonth()+d);buildCal();}
+
+function selectDay(key){selectedDay=key;panelTab='all';buildCal();renderDayPanel(key);}
+function setTab(tab,key){panelTab=tab;renderDayPanel(key);}
+function renderDayPanel(key){
+  const panel=document.getElementById('day-panel');
+  const all=state.items[key]||[];
+  const[y,m,d]=key.split('-');
+  const M=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const posts=all.filter(i=>i.type==='post'),videos=all.filter(i=>i.type==='video');
+  const filtered=panelTab==='all'?all:panelTab==='post'?posts:videos;
+  let items='';
+  filtered.forEach(it=>{
+    const ri=all.indexOf(it);
+    if(it.type==='post'){
+      const c=CATS[it.cat]||CATS.institucional;
+      const imgH=it.img?`<img class="item-img" src="${it.img}"/>`:`<div class="item-img-ph" style="background:${c.bg}">${getCatEmoji(it.cat)}</div>`;
+      items+=`<div class="item-card">${imgH}<button class="del-btn" onclick="delItem('${key}',${ri})">✕</button><div class="item-body"><div class="item-meta"><span class="itb" style="background:rgba(255,255,255,.07);color:#aaa">▦</span><span class="itag" style="background:${c.bg};color:${c.color}">${c.label}</span>${it.time?`<span class="itime">${it.time}</span>`:''}</div><h3 style="margin-top:5px">${it.title}</h3>${it.caption?`<p class="item-cap">${it.caption}</p>`:''}<div class="iactions"><button class="btn-sm" onclick="editItem('${key}',${ri})">✏ Editar</button>${it.driveUrl?`<span class="dbadge" onclick="window.open('${it.driveUrl}','_blank')">☁ Drive</span>`:''}</div></div></div>`;
+    } else {
+      const vurl=it.driveUrl||it.url||'';
+      const thumb=ytThumb(it.url||'');
+      items+=`<div class="item-card"><div class="vid-ph">${thumb?`<img src="${thumb}"/>`:''}${it.driveId?`<div style="position:absolute;top:3px;left:3px;background:rgba(0,0,0,.7);color:#00BCD4;font-size:8px;padding:2px 5px;border-radius:3px">☁</div>`:''}<div class="play-sm" onclick="${vurl?`window.open('${vurl}','_blank')`:''}"></div></div><button class="del-btn" onclick="delItem('${key}',${ri})">✕</button><div class="item-body"><div class="item-meta"><span class="itb" style="background:${VC.bg};color:${VC.color}">▷</span>${it.vstatus?`<span class="itag" style="background:rgba(255,255,255,.06);color:#aaa">${it.vstatus}</span>`:''} ${it.time?`<span class="itime">${it.time}</span>`:''}</div><h3 style="margin-top:5px">${it.title}</h3>${it.vdesc?`<p class="item-cap">${it.vdesc}</p>`:''}<div class="iactions"><button class="btn-sm" onclick="editItem('${key}',${ri})">✏ Editar</button>${vurl?`<span class="dbadge" onclick="window.open('${vurl}','_blank')">☁ Abrir</span>`:''}</div></div></div>`;
+    }
+  });
+  if(!filtered.length) items=`<div class="dp-empty"><div class="dp-ico">📭</div><div>Nenhum conteúdo nesta aba</div></div>`;
+  panel.innerHTML=`<div class="dp-hd"><h2>${+d} de ${M[+m-1]}</h2><div class="dp-actions"><button class="btn-add" style="font-size:10px;padding:5px 9px" onclick="openItemModalForDay('${key}','post')">+ Post</button><button class="btn-outline" style="font-size:10px;padding:5px 9px" onclick="openItemModalForDay('${key}','video')">▷</button></div></div><div class="panel-tabs"><button class="ptab${panelTab==='all'?' on':''}" onclick="setTab('all','${key}')">Tudo (${all.length})</button><button class="ptab${panelTab==='post'?' on':''}" onclick="setTab('post','${key}')">Posts (${posts.length})</button><button class="ptab${panelTab==='video'?' on':''}" onclick="setTab('video','${key}')">Vídeos (${videos.length})</button></div><div>${items}</div>`;
+}
+function ytThumb(url){const m=url.match(/(?:youtu\.be\/|v=)([^&?/]+)/);return m?`https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`:'';}
+function getCatEmoji(cat){return{treino:'🏃',nutricao:'🥗',review:'👟',evento:'🏅',resultado:'📊',institucional:'🏷'}[cat]||'📝';}
+
+function openItemModal(type,date='',editId=''){
+  document.getElementById('item-modal-title').textContent=editId?'Editar conteúdo':type==='video'?'Agendar vídeo':'Agendar post';
+  document.getElementById('im-type').value=type;document.getElementById('im-edit-id').value=editId;
+  document.getElementById('im-drive-id').value='';document.getElementById('im-drive-url').value='';
+  document.getElementById('im-date').value=date;document.getElementById('im-time').value='';
+  document.getElementById('im-title').value='';document.getElementById('im-caption').value='';
+  document.getElementById('im-cat').value='treino';document.getElementById('im-url').value='';
+  document.getElementById('im-vstatus').value='Publicado';document.getElementById('im-vdesc').value='';
+  document.getElementById('im-file').value='';
+  document.getElementById('post-fields').style.display=type==='post'?'':'none';
+  document.getElementById('video-fields').style.display=type==='video'?'':'none';
+  document.getElementById('drive-ref-info').style.display='none';
+  openModal('item-modal');
+}
+function openItemModalForDay(key,type){openItemModal(type,key);}
+function editItem(key,idx){
+  const it=state.items[key][idx];openItemModal(it.type,key,key+'|'+idx);
+  document.getElementById('im-time').value=it.time||'';document.getElementById('im-title').value=it.title||'';
+  if(it.type==='post'){document.getElementById('im-caption').value=it.caption||'';document.getElementById('im-cat').value=it.cat||'treino';}
+  else{document.getElementById('im-url').value=it.url||'';document.getElementById('im-vstatus').value=it.vstatus||'Publicado';document.getElementById('im-vdesc').value=it.vdesc||'';}
+  if(it.driveId){document.getElementById('im-drive-id').value=it.driveId;document.getElementById('im-drive-url').value=it.driveUrl||'';document.getElementById('drive-ref-info').style.display='block';}
+}
+function saveItem(){
+  const type=document.getElementById('im-type').value;
+  const date=document.getElementById('im-date').value;
+  const time=document.getElementById('im-time').value.trim();
+  const title=document.getElementById('im-title').value.trim();
+  const editId=document.getElementById('im-edit-id').value;
+  const driveId=document.getElementById('im-drive-id').value;
+  const driveUrl_=document.getElementById('im-drive-url').value;
+  if(!date||!title) return alert('Informe a data e o título.');
+  const finalize=(img='')=>{
+    const base={id:Date.now()+'',type,title,time,img,driveId,driveUrl:driveUrl_};
+    const item=type==='post'?{...base,caption:document.getElementById('im-caption').value.trim(),cat:document.getElementById('im-cat').value}:{...base,url:document.getElementById('im-url').value.trim(),vstatus:document.getElementById('im-vstatus').value,vdesc:document.getElementById('im-vdesc').value.trim()};
+    if(editId){const[k,i]=editId.split('|');item.img=img||state.items[k][+i].img;state.items[k][+i]=item;}
+    else{if(!state.items[date])state.items[date]=[];state.items[date].push(item);}
+    closeModal('item-modal');buildCal();if(selectedDay===date)renderDayPanel(date);renderOverview();save();
+  };
+  const file=document.getElementById('im-file').files[0];
+  if(file&&type==='post'){const r=new FileReader();r.onload=e=>finalize(e.target.result);r.readAsDataURL(file);}
+  else finalize('');
+}
+function delItem(key,idx){if(!confirm('Remover?'))return;state.items[key].splice(idx,1);if(!state.items[key].length)delete state.items[key];buildCal();renderDayPanel(key);renderOverview();save();}
+
+function loadDrive(){if(driveLoaded)return;driveLoaded=true;renderDriveFolder(drivePath[drivePath.length-1].id);}
+function renderBreadcrumb(){
+  document.getElementById('breadcrumb').innerHTML=drivePath.map((p,i)=>{
+    if(i===drivePath.length-1) return `<span style="color:var(--text)">${p.name}</span>`;
+    return `<span class="bc-link" onclick="driveTo(${i})">${p.name}</span><span class="bc-sep"> › </span>`;
+  }).join('');
+}
+function renderDriveFolder(folderId){
+  renderBreadcrumb();
+  const content=document.getElementById('drive-content');
+  const node=DRIVE_TREE[folderId];
+  if(!node){content.innerHTML=`<div class="drive-loading"><a href="https://drive.google.com/drive/folders/${folderId}" target="_blank" style="color:var(--lime)">Abrir no Google Drive →</a></div>`;return;}
+  if(!node.items||!node.items.length){content.innerHTML=`<div class="drive-loading">Pasta vazia</div>`;return;}
+  let html='<div class="drive-grid">';
+  node.items.forEach(item=>{
+    const isFolder=item.type==='folder',isVideo=item.type==='video';
+    const ico=isFolder?'📁':isVideo?'🎬':'📄';
+    const selClass=isVideo?'is-media':'';
+    const selActive=selDriveItem&&selDriveItem.id===item.id?' sel-on':'';
+    const clickFn=isFolder?`driveOpen('${item.id}','${item.name.replace(/'/g,"\\'")}')`:isVideo?`selectDriveItem('${item.id}','${item.name.replace(/'/g,"\\'")}','video','${dUrl(item.id)}')`:'' ;
+    html+=`<div class="di-card ${selClass}${selActive}" onclick="${clickFn}"><div class="di-ico">${ico}</div><div class="di-name">${item.name}</div>${item.size?`<div class="di-meta">${item.size}</div>`:''}</div>`;
+  });
+  html+='</div>';
+  content.innerHTML=html;
+}
+function driveOpen(id,name){drivePath.push({id,name});selDriveItem=null;document.getElementById('drive-sel-bar').style.display='none';renderDriveFolder(id);}
+function driveTo(idx){drivePath=drivePath.slice(0,idx+1);selDriveItem=null;document.getElementById('drive-sel-bar').style.display='none';renderDriveFolder(drivePath[drivePath.length-1].id);}
+function selectDriveItem(id,name,type,url){
+  selDriveItem={id,name,type,url};
+  document.getElementById('drive-sel-label').textContent=`Selecionado: ${name}`;
+  document.getElementById('drive-sel-bar').style.display='flex';
+  renderDriveFolder(drivePath[drivePath.length-1].id);
+}
+function clearDriveSel(){selDriveItem=null;document.getElementById('drive-sel-bar').style.display='none';renderDriveFolder(drivePath[drivePath.length-1].id);}
+function scheduleFromDrive(){
+  if(!selDriveItem)return;
+  openItemModal(selDriveItem.type);
+  document.getElementById('im-title').value=selDriveItem.name.replace(/\.[^.]+$/,'');
+  document.getElementById('im-drive-id').value=selDriveItem.id;
+  document.getElementById('im-drive-url').value=selDriveItem.url||'';
+  if(selDriveItem.type==='video') document.getElementById('im-url').value=selDriveItem.url||'';
+  document.getElementById('drive-ref-info').style.display='block';
+  clearDriveSel();
+}
+
+function renderTools(){
+  const g=document.getElementById('tools-grid');g.innerHTML='';
+  state.tools.forEach((t,i)=>{g.innerHTML+=`<div class="tool-card"><div class="tool-ico">${t.icon||'🔧'}</div><h3>${t.name}</h3><p>${t.desc}</p>${t.url?`<a class="tool-link" href="${t.url}" target="_blank">Acessar →</a>`:''}<button class="del-btn" onclick="delTool(${i})">✕</button></div>`;});
+}
+function saveTool(){const name=document.getElementById('t-name').value.trim(),desc=document.getElementById('t-desc').value.trim(),icon=document.getElementById('t-icon').value.trim(),url=document.getElementById('t-url').value.trim();if(!name)return alert('Informe o nome.');state.tools.push({name,desc,icon,url});['t-name','t-desc','t-icon','t-url'].forEach(id=>document.getElementById(id).value='');closeModal('tool-modal');renderTools();save();}
+function delTool(i){if(confirm('Remover?')){state.tools.splice(i,1);renderTools();save();}}
+
+(async()=>{
+  if(sessionStorage.getItem('rl-auth')==='1') document.getElementById('login-screen').style.display='none';
+  await loadState();renderOverview();renderLegend();buildCal();renderTools();
+})();
+</script>
+</body>
+</html>
